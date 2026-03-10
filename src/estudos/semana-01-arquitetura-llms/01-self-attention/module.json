@@ -1,0 +1,8 @@
+{
+  "id": "self-attention",
+  "title": "Self-Attention",
+  "description": "O mecanismo de atencao que permite tokens se relacionarem",
+  "icon": "🧠",
+  "color": "blue",
+  "week": 1
+}

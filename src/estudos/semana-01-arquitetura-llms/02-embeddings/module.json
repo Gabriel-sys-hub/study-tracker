@@ -1,0 +1,8 @@
+{
+  "id": "embeddings",
+  "title": "Word Embeddings",
+  "description": "Como palavras viram vetores numericos",
+  "icon": "📊",
+  "color": "purple",
+  "week": 1
+}

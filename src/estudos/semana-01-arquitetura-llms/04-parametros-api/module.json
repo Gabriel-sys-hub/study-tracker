@@ -1,0 +1,8 @@
+{
+  "id": "parametros-api",
+  "title": "Parametros de Geracao",
+  "description": "top_p e temperature para controlar criatividade",
+  "icon": "🎛️",
+  "color": "orange",
+  "week": 1
+}

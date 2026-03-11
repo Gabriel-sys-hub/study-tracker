@@ -11,9 +11,18 @@ import GoalsStreaks from "./components/GoalsStreaks";
 import ResourceLibrary from "./components/ResourceLibrary";
 import Analytics from "./components/Analytics";
 import Certificate from "./components/Certificate";
+import CreateStudyPlan from "./components/CreateStudyPlan";
+import AISuggestions from "./components/AISuggestions";
 import { ThemeToggle } from "./components/ui";
 import { CATEGORY_COLORS, STATUS_CONFIG } from "./constants/theme";
 import { percentage, saveToStorage, loadFromStorage } from "./utils";
+
+// Study plan tabs configuration
+const STUDY_TABS = [
+  { id: "current", label: "Plano Atual", icon: "📚" },
+  { id: "create", label: "Criar Estudo", icon: "✏️" },
+  { id: "ai", label: "Sugestões IA", icon: "🤖" },
+];
 
 // Views configuration
 const VIEWS = {
@@ -86,6 +95,13 @@ export default function App() {
   const [notes, setNotes] = useState(() => loadFromStorage(STORAGE_KEY, { progress: {}, notes: {} }).notes);
   const [activeMonth, setActiveMonth] = useState(0);
   const [activeView, setActiveView] = useState("tracker"); // "tracker" | "scripts" | "dashboard" | "flashcards" | "quiz" | "python"
+  const [activeStudyTab, setActiveStudyTab] = useState("current"); // "current" | "create" | "ai"
+  const [suggestedTopic, setSuggestedTopic] = useState(null); // Tópico sugerido pela IA para adicionar ao plano
+
+  const handleAddSuggestedToPlan = (topic) => {
+    setSuggestedTopic(topic);
+    setActiveStudyTab("create");
+  };
 
   const save = (p, n) => {
     saveToStorage(STORAGE_KEY, { progress: p, notes: n });
@@ -203,20 +219,50 @@ export default function App() {
         <Certificate totalTopics={totalTopics} completedTopics={doneTopic} />
       ) : (
         <>
-          {/* Month tabs */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-x-auto">
-            {plan.map((m, mi) => {
-              const mc = CATEGORY_COLORS[m.color];
-              const mp = monthPct(m);
-              return (
-                <button key={mi} onClick={() => setActiveMonth(mi)}
-                  className={`flex-1 min-w-max px-4 py-3 text-sm font-medium border-b-2 transition-all ${activeMonth === mi ? `border-current ${mc.text} bg-gray-50 dark:bg-gray-700` : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"}`}>
-                  <div>{m.month.split("—")[0].trim()}</div>
-                  <div className="text-xs font-normal text-gray-400 dark:text-gray-500 mt-0.5">{mp}% concluído</div>
+          {/* Study Plan Tabs (High Level) */}
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="max-w-4xl mx-auto flex">
+              {STUDY_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveStudyTab(tab.id)}
+                  className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center justify-center gap-2 ${
+                    activeStudyTab === tab.id
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950"
+                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
+
+          {activeStudyTab === "create" ? (
+            <CreateStudyPlan
+              suggestedTopic={suggestedTopic}
+              onClearSuggestion={() => setSuggestedTopic(null)}
+              onPlanCreated={() => setSuggestedTopic(null)}
+            />
+          ) : activeStudyTab === "ai" ? (
+            <AISuggestions onAddToPlan={handleAddSuggestedToPlan} />
+          ) : (
+            <>
+              {/* Month tabs */}
+              <div className="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-x-auto">
+                {plan.map((m, mi) => {
+                  const mc = CATEGORY_COLORS[m.color];
+                  const mp = monthPct(m);
+                  return (
+                    <button key={mi} onClick={() => setActiveMonth(mi)}
+                      className={`flex-1 min-w-max px-4 py-3 text-sm font-medium border-b-2 transition-all ${activeMonth === mi ? `border-current ${mc.text} bg-gray-50 dark:bg-gray-700` : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"}`}>
+                      <div>{m.month.split("—")[0].trim()}</div>
+                      <div className="text-xs font-normal text-gray-400 dark:text-gray-500 mt-0.5">{mp}% concluído</div>
+                    </button>
+                  );
+                })}
+              </div>
 
           {/* Month content */}
       <div className="p-4 max-w-4xl mx-auto">
@@ -287,6 +333,8 @@ export default function App() {
           ))}
         </div>
       </div>
+            </>
+          )}
         </>
       )}
     </div>
